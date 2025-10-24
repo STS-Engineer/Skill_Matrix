@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Skills") }}{% endblock %}
+
+{% block content %}
+<style>
+  /* ====== Header ====== */
+  .skills-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    color: white;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skills-header::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -80px;
+    width: 260px;
+    height: 260px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
+
+  .skills-header h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .skills-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ====== Table ====== */
+  .skills-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    animation: fadeInUp 0.6s ease;
+  }
+
+  .skills-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .skills-table thead {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  }
+
+  .skills-table thead th {
+    padding: 1rem;
+    font-weight: 600;
+    color: #667eea;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: none;
+  }
+
+  .skills-table tbody tr {
+    transition: all 0.2s ease;
+  }
+
+  .skills-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    transform: scale(1.01);
+  }
+
+  .skills-table tbody td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #f1f3f5;
+    color: #2d3748;
+  }
+
+  /* ====== Buttons ====== */
+  .btn-add-skill {
+    background: linear-gradient(135deg, #48bb78 0%, #38b2ac 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    box-shadow: 0 4px 10px rgba(72, 187, 120, 0.25);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-add-skill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(72, 187, 120, 0.35);
+    color: white;
+  }
+
+  /* ====== Empty state ====== */
+  .empty-state {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    border-radius: 16px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.6s ease;
+  }
+
+  .empty-state i {
+    font-size: 3.5rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    color: #718096;
+    font-size: 1.1rem;
+  }
+
+  .empty-state a {
+    color: #667eea;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .empty-state a:hover {
+    text-decoration: underline;
+  }
+
+  /* ====== Animations ====== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .skills-header {
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .skills-header h3 {
+      font-size: 1.6rem;
+    }
+
+    .skills-table thead {
+      display: none;
+    }
+
+    .skills-table tbody td {
+      display: block;
+      text-align: right;
+      border-bottom: 1px solid #f1f3f5;
+      position: relative;
+      padding-left: 50%;
+    }
+
+    .skills-table tbody td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 1rem;
+      top: 0.8rem;
+      font-weight: 600;
+      color: #667eea;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+  }
+</style>
+
+<div class="container mt-4">
+  
+  <!-- Header -->
+  <div class="skills-header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+      <h3><i class="bi bi-lightning-fill"></i> {{ _("Skills Directory") }}</h3>
+      <p>{{ _("All registered skills across the organization") }}</p>
+    </div>
+    <a href="{{ url_for('add_skill') }}" class="btn-add-skill mt-3 mt-md-0">
+      <i class="bi bi-plus-circle-fill"></i> {{ _("Add New Skill") }}
+    </a>
+  </div>
+
+  <!-- Table or Empty -->
+  {% if skills %}
+  <div class="skills-table-container">
+    <div class="table-responsive">
+      <table class="skills-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>{{ _("Skill Name") }}</th>
+            <th>{{ _("Line") }}</th>
+            <th>{{ _("Description") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in skills %}
+          <tr>
+            <td data-label="ID">{{ s.id }}</td>
+            <td data-label="{{ _('Skill Name') }}" class="fw-semibold">{{ s.skill_name }}</td>
+            <td data-label="{{ _('Category') }}">{{ s.category or "-" }}</td>
+            <td data-label="{{ _('Description') }}">{{ s.description or "-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty-state mt-4">
+    <i class="bi bi-stars"></i>
+    <p>{{ _("No skills have been added yet.") }}</p>
+    <a href="{{ url_for('add_skill') }}">{{ _("Add one now.") }}</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
