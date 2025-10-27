@@ -372,9 +372,9 @@
               <td>
                 {% if e.qr_code_path %}
                 <div class="qr-code-wrapper">
-                  <img src="{{ url_for('static', filename=e.qr_code_path) }}" width="70" alt="QR {{ e.first_name }}"
+                  <img src="{{e.qr_code_path }}" width="70" alt="QR {{ e.first_name }}"
                     data-bs-toggle="modal" data-bs-target="#qrModal"
-                    data-image="{{ url_for('static', filename=e.qr_code_path) }}">
+                    data-image="{{e.qr_code_path}}">
                 </div>
                 {% else %}
                 <span class="text-muted fst-italic">

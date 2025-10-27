@@ -257,7 +257,7 @@
 
     <div class="card-body">
       {% if employee.photo_path %}
-      <img src="{{ url_for('static', filename=employee.photo_path) }}" alt="Photo" class="profile-img">
+      <img src="{{employee.photo_path }}" alt="Photo" class="profile-img">
       {% else %}
       <div class="rounded-circle d-inline-flex align-items-center justify-content-center profile-placeholder">
         <span class="fw-bold">{{ employee.first_name[0] }}{{ employee.last_name[0] }}</span>

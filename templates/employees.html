@@ -436,7 +436,7 @@
         {% if e.qr_code_path %}
         <div class="qr-section">
           <a href="{{ url_for('employee_detail', employee_id=e.id) }}">
-            <img src="{{ url_for('static', filename=e.qr_code_path) }}" width="80" alt="QR {{ e.first_name }}">
+            <img src="{{ e.qr_code_path }}" width="80" alt="QR {{ e.first_name }}">
           </a>
         </div>
         {% else %}

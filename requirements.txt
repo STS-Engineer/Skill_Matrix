@@ -6,3 +6,5 @@ qrcode
 Pillow
 Flask-Babel
 reportlab
+requests
+dotenv

@@ -275,7 +275,7 @@
       <!-- ✅ AVATAR avec bouton + -->
       <div class="profile-avatar position-relative">
         {% if employee.photo_path %}
-        <img src="{{ url_for('static', filename=employee.photo_path) }}" alt="Photo" id="photo-preview">
+        <img src="{{employee.photo_path}}" alt="Photo" id="photo-preview">
         {% else %}
         <div class="profile-avatar-fallback">
           {{ employee.first_name[0] }}{{ employee.last_name[0] }}
