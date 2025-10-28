@@ -221,13 +221,23 @@ def delete_employee(employee_id):
 @app.route("/badge/<int:employee_id>")
 def generate_badge(employee_id):
     employee = Employee.query.get_or_404(employee_id)
+
+    # === 📁 Création du dossier local pour les badges ===
+    media_qr_folder = os.path.join(app.root_path, "media", "qrcodes")
+    os.makedirs(media_qr_folder, exist_ok=True)
+
+    # === 📄 Chemin du fichier PDF généré ===
+    badge_path = os.path.join(media_qr_folder, f"badge_{employee.id}.pdf")
+
+    # === 📏 Dimensions du badge ===
     width, height = (5.9 * cm, 8.4 * cm)
-    badge_path = os.path.join("/qrcodes", f"badge_{employee.id}.pdf")
     c = canvas.Canvas(badge_path, pagesize=(width, height))
 
+    # === 🔲 Bordure extérieure ===
     c.setStrokeColorRGB(0, 0, 0)
     c.rect(0.1 * cm, 0.1 * cm, width - 0.2 * cm, height - 0.2 * cm)
 
+    # === 🏢 En-tête texte ===
     c.setFont("Helvetica-Bold", 7)
     c.drawCentredString(width / 2, height - 0.8 * cm, "ASSYMEX MONTERREY, S.A. DE C.V.")
     c.setFont("Helvetica", 6)
@@ -235,29 +245,51 @@ def generate_badge(employee_id):
     c.drawCentredString(width / 2, height - 1.6 * cm, "67190 Guadalupe, N.L. México")
     c.drawCentredString(width / 2, height - 2.0 * cm, "Tels. +52 81 8127 2833 y +52 81 8127 2835")
 
+    # === Ligne de séparation ===
     c.setStrokeColorRGB(0.75, 0.75, 0.75)
     c.setLineWidth(0.4)
     c.line(0.5 * cm, height - 2.3 * cm, width - 0.5 * cm, height - 2.3 * cm)
 
+    # === Logos locaux ===
     assymex_logo = os.path.join(app.root_path, "static", "img", "logo_assymex.jpg")
     avocarbon_logo = os.path.join(app.root_path, "static", "img", "avocarbon_logo.png")
 
     if os.path.exists(assymex_logo):
-        c.drawImage(assymex_logo, 0.7 * cm, height - 4.0 * cm, width=2.2 * cm, height=0.9 * cm, preserveAspectRatio=True, mask='auto')
+        c.drawImage(assymex_logo, 0.7 * cm, height - 4.0 * cm,
+                    width=2.2 * cm, height=0.9 * cm,
+                    preserveAspectRatio=True, mask='auto')
 
+    # === 🧾 QR Code (hébergé sur GitHub raw) ===
     if employee.qr_code_path:
-        c.drawImage(employee.qr_code_path, 0.9 * cm, 1.9 * cm, width=2.0 * cm, height=2.0 * cm, mask='auto')
+        try:
+            c.drawImage(employee.qr_code_path, 0.9 * cm, 1.9 * cm,
+                        width=2.0 * cm, height=2.0 * cm, mask='auto')
+        except Exception as e:
+            print(f"⚠️ Impossible d'afficher le QR code : {e}")
 
+    # === 🖼️ Photo Employé (hébergée sur GitHub raw) ===
     if employee.photo_path:
-        c.drawImage(employee.photo_path, 3.3 * cm, 1.9 * cm, width=2.4 * cm, height=3.2 * cm, preserveAspectRatio=True, mask='auto')
+        try:
+            c.drawImage(employee.photo_path, 3.3 * cm, 1.9 * cm,
+                        width=2.4 * cm, height=3.2 * cm,
+                        preserveAspectRatio=True, mask='auto')
+        except Exception as e:
+            print(f"⚠️ Impossible d'afficher la photo : {e}")
+            c.rect(3.3 * cm, 1.9 * cm, 2.4 * cm, 3.2 * cm)
+            c.setFont("Helvetica-Oblique", 6)
+            c.drawString(3.5 * cm, 3.8 * cm, "No Photo")
     else:
         c.rect(3.3 * cm, 1.9 * cm, 2.4 * cm, 3.2 * cm)
         c.setFont("Helvetica-Oblique", 6)
         c.drawString(3.5 * cm, 3.8 * cm, "No Photo")
 
+    # === Logo AVOCarbon ===
     if os.path.exists(avocarbon_logo):
-        c.drawImage(avocarbon_logo, width - 2.2 * cm, 0.25 * cm, width=1.7 * cm, height=0.7 * cm, preserveAspectRatio=True, mask='auto')
+        c.drawImage(avocarbon_logo, width - 2.2 * cm, 0.25 * cm,
+                    width=1.7 * cm, height=0.7 * cm,
+                    preserveAspectRatio=True, mask='auto')
 
+    # === Bandeau Nom et Poste ===
     c.setFillColorRGB(0.17, 0.35, 0.69)
     c.rect(0.4 * cm, 0.6 * cm, width - 0.8 * cm, 1.2 * cm, fill=True, stroke=False)
     c.setFillColorRGB(1, 1, 1)
@@ -269,6 +301,7 @@ def generate_badge(employee_id):
         c.setFont("Helvetica", 6)
         c.drawCentredString(width / 2, 0.7 * cm, employee.position.upper())
 
+    # === Encadré ID ===
     c.setStrokeColorRGB(0.3, 0.3, 0.3)
     c.setFillColorRGB(0.95, 0.95, 0.95)
     c.rect(0.4 * cm, 0.2 * cm, 2.2 * cm, 0.35 * cm, fill=True, stroke=True)
@@ -276,7 +309,10 @@ def generate_badge(employee_id):
     c.setFillColorRGB(0, 0, 0)
     c.drawString(0.6 * cm, 0.32 * cm, f"ID: {employee.id}")
 
+    # === Sauvegarde du PDF ===
     c.save()
+
+    # ✅ Retourne le badge en téléchargement
     return send_file(badge_path, as_attachment=True)
 
 
