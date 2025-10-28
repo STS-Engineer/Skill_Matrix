@@ -279,6 +279,13 @@
       {% if employee.skills %}
       <h6>{{ _("Skills") }}</h6>
       <ul>
+        {% set LEVEL_DESCR = {
+        'E': _('In training'),
+        'A': _('Knows documentation'),
+        'B': _('Simple adjustments'),
+        'C': _('Can train others'),
+        'D': _('Manage line')
+        } %}
         {% for es in employee.skills %}
         <li class="skill-item">
           <div>
@@ -293,7 +300,11 @@
               es.last_assessed.strftime("%d/%m/%Y") }}</span>
             {% endif %}
           </div>
-          <span class="skill-level">{{ es.level }}</span>
+          {% set lvl = (es.level|string|trim|upper) %}
+          <div class="text-end">
+            <span class="skill-level">{{ lvl }}</span><br>
+            <small class="text-muted" style="font-size: 0.8rem;">{{ LEVEL_DESCR.get(lvl, '-') }}</small>
+          </div>
         </li>
         {% endfor %}
       </ul>

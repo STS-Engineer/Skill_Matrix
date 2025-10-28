@@ -189,9 +189,21 @@ def add_skill_to_employee(employee_id):
 
 @app.route("/skills")
 def skills_list():
-    skills = Skill.query.all()
-    return render_template("skills.html", skills=skills)
+    # 🔍 Récupérer le filtre de ligne
+    line = request.args.get("line", "").strip()
 
+    # Construire la requête
+    query = Skill.query
+    if line:
+        query = query.filter(Skill.category == line)
+
+    # Exécuter la requête
+    skills = query.all()
+
+    # Récupérer toutes les lignes distinctes pour le menu déroulant
+    lines = [l[0] for l in db.session.query(Skill.category).distinct().all() if l[0]]
+
+    return render_template("skills.html", skills=skills, lines=lines)
 
 @app.route("/add_skill", methods=["GET", "POST"])
 def add_skill():
@@ -206,6 +218,18 @@ def add_skill():
         flash(_("✨ Skill added successfully!"), "success")
         return redirect(url_for("skills_list"))
     return render_template("add_skill.html")
+
+@app.route("/skill/<int:skill_id>/delete", methods=["POST"])
+def delete_skill(skill_id):
+    skill = Skill.query.get_or_404(skill_id)
+    
+    # ⚠️ Supprimer aussi les relations EmployeeSkill associées
+    EmployeeSkill.query.filter_by(skill_id=skill.id).delete()
+    
+    db.session.delete(skill)
+    db.session.commit()
+    flash(_("🗑️ Skill deleted successfully!"), "info")
+    return redirect(url_for("skills_list"))
 
 
 @app.route("/employee/<int:employee_id>/delete", methods=["POST"])

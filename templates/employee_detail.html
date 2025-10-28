@@ -342,6 +342,7 @@
         <thead>
           <tr>
             <th>{{ _("Skill") }}</th>
+            <th>{{ _("Line") }}</th>
             <th>{{ _("Level") }}</th>
             <th>{{ _("Trainer") }}</th>
             <th>{{ _("Assessed On") }}</th>
@@ -349,22 +350,47 @@
             <th>{{ _("Attachment") }}</th>
           </tr>
         </thead>
+        {% set LEVEL_DESCR = {
+        'E': _('In training'),
+        'A': _('Knows documentation'),
+        'B': _('Simple adjustments'),
+        'C': _('Can train others'),
+        'D': _('Manage line')
+        } %}
         <tbody>
 
 
           {% for es in employee.skills %}
+
           <tr>
+            <!-- Nom du skill -->
             <td>{{ es.skill.skill_name }}</td>
-            <td><span class="level-badge level-{{ es.level }}">{{ es.level }}</span></td>
+
+            <!-- Ligne (catégorie) -->
+            <td>{{ es.skill.category or "-" }}</td>
+
+            <!-- Niveau avec description -->
+            
+            {% set lvl = (es.level|string|trim|upper) %}
+            <td>
+              <span class="level-badge level-{{ lvl }}">{{ lvl }}</span>
+              <small class="text-muted ms-1">{{ LEVEL_DESCR.get(lvl, '-') }}</small>
+            </td>
+
+            <!-- Formateur -->
             <td>{{ es.trainer or "-" }}</td>
+
+            <!-- Date d’évaluation -->
             <td>{{ es.last_assessed.strftime("%d/%m/%Y") if es.last_assessed else "-" }}</td>
+
+            <!-- Remarques -->
             <td>{{ es.remarks or "-" }}</td>
 
-            <!-- ✅ Nouvelle colonne “Attachment” -->
+            <!-- Pièce jointe -->
             <td>
               {% if es.attachment %}
-              <a href="{{es.attachment }}" target="_blank"
-                class="btn btn-outline-secondary btn-sm" style="font-size: 0.8rem; padding: 4px 10px;">
+              <a href="{{ es.attachment }}" target="_blank" class="btn btn-outline-secondary btn-sm"
+                style="font-size: 0.8rem; padding: 4px 10px;">
                 <i class="bi bi-paperclip"></i> {{ _('View') }}
               </a>
               {% else %}
@@ -373,6 +399,7 @@
             </td>
           </tr>
           {% endfor %}
+
 
         </tbody>
       </table>
