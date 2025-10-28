@@ -318,7 +318,7 @@
     {% if employee.qr_code_path %}
     <div class="qr-section">
       <div class="qr-box">
-        <img src="{{ url_for('static', filename=employee.qr_code_path) }}" alt="QR Code">
+        <img src="{{ employee.qr_code_path }}" alt="QR Code">
         <div class="qr-caption">{{ _("Scan for details") }}</div>
       </div>
       <a href="{{ url_for('generate_badge', employee_id=employee.id) }}" class="btn-badge">
@@ -363,7 +363,7 @@
             <!-- ✅ Nouvelle colonne “Attachment” -->
             <td>
               {% if es.attachment %}
-              <a href="{{ url_for('static', filename=es.attachment) }}" target="_blank"
+              <a href="{{ es.attachment }}" target="_blank"
                 class="btn btn-outline-secondary btn-sm" style="font-size: 0.8rem; padding: 4px 10px;">
                 <i class="bi bi-paperclip"></i> {{ _('View') }}
               </a>
