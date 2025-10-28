@@ -4,7 +4,7 @@ import requests
 
 def upload_to_github(file_path, github_path):
     token = os.getenv("GITHUB_TOKEN")
-    repo = os.getenv("GITHUB_REPO")
+    repo ="STS-Engineer/uploads"
     branch = os.getenv("GITHUB_BRANCH", "main")
 
     if not token or not repo:
