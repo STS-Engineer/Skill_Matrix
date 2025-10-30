@@ -161,7 +161,7 @@
       transition: margin-left 0.3s ease;
     }
 
-    .sidebar.active ~ .main-content {
+    .sidebar.active~.main-content {
       margin-left: 280px;
     }
 
@@ -257,15 +257,18 @@
       box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
     }
 
-    .content-wrapper {
-      padding: 2rem;
-      animation: fadeIn 0.4s ease;
+    /* === FLASH MESSAGES === */
+    .alert {
+      animation: fadeSlide 0.5s ease;
+      font-weight: 500;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    @keyframes fadeIn {
+    @keyframes fadeSlide {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(-10px);
       }
 
       to {
@@ -392,6 +395,23 @@
       </div>
 
       <div class="content-wrapper">
+
+        <!-- === FLASH MESSAGES === -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="container mt-4">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'warning' if category == 'message' else category }} alert-dismissible fade show shadow-sm mx-auto"
+                     role="alert"
+                     style="max-width: 800px;">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
       </div>
 
