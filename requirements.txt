@@ -7,7 +7,6 @@ dotenv
 qrcode
 reportlab
 requests
-gunicorn
 psycopg2-binary
 
 Werkzeug
@@ -16,6 +15,5 @@ click
 itsdangerous
 
 PyGithub
-penpyxl
 pandas
 pillow
