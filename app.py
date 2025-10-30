@@ -52,10 +52,8 @@ def admin_required():
     if not current_user.is_authenticated or current_user.role != "admin":
         abort(403)
 
-def audit(action, entity_type=None, entity_id=None, details=None):
-    """
-    Log d’audit robuste (sans dépendre d’un utils externe).
-    """
+def audit_log(action, entity_type=None, entity_id=None, details=None):
+    """📜 Enregistre chaque action utilisateur dans AuditLog"""
     try:
         log = AuditLog(
             user_id=current_user.id if getattr(current_user, "is_authenticated", False) else None,
@@ -64,14 +62,13 @@ def audit(action, entity_type=None, entity_id=None, details=None):
             entity_id=str(entity_id) if entity_id is not None else None,
             details=details or {},
             ip_address=request.remote_addr,
-            user_agent=request.headers.get("User-Agent"),
+            user_agent=request.headers.get("User-Agent")
         )
         db.session.add(log)
         db.session.commit()
     except Exception as e:
-        # on ne casse jamais le flux si l’audit rate
         db.session.rollback()
-        print("Audit error:", e)
+        print("⚠️ Erreur d’enregistrement dans AuditLog :", e)
 
 # ========= Context =========
 @app.context_processor
@@ -102,7 +99,7 @@ def register():
         db.session.add(u)
         db.session.commit()
 
-        audit("register", "User", u.id, {"email": email, "username": username})
+        audit_log("register", "User", u.id, {"email": email, "username": username})
 
         flash(_("Account created successfully! You can now log in."), "success")
         return redirect(url_for("login"))
@@ -120,7 +117,7 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
-            audit("login", "User", user.id, {"email": user.email})
+            audit_log("login", "User", user.id, {"email": user.email})
             flash(_("Successfully logged in ✅"), "success")
             return redirect(url_for("index"))
 
@@ -131,9 +128,8 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
-    audit("logout", "User", current_user.id, {"email": current_user.email})
+    audit_log("logout", "User", current_user.id, {"email": current_user.email})
     logout_user()
-    flash(_("You have been logged out 👋"), "info")
     return redirect(url_for("login"))
 
 # ========= Home / Index =========
@@ -230,7 +226,7 @@ def add_employee():
                 pass
 
             # 🧾 Audit
-            audit("add_employee", "Employee", emp.id, {
+            audit_log("add_employee", "Employee", emp.id, {
                 "name": f"{first_name} {last_name}",
                 "position": position,
                 "department": department
@@ -244,7 +240,7 @@ def add_employee():
             # Audit best effort (si emp existe)
             try:
                 if 'emp' in locals() and emp.id:
-                    audit("add_employee_failed", "Employee", emp.id, {"error": str(e)})
+                    audit_log("add_employee_failed", "Employee", emp.id, {"error": str(e)})
             except Exception:
                 pass
             flash(f"❌ {str(e)}", "danger")
@@ -283,7 +279,7 @@ def update_employee_info(employee_id):
     db.session.commit()
 
     # Audit
-    audit("update_employee_info", "Employee", employee_id, {
+    audit_log("update_employee_info", "Employee", employee_id, {
         "old_position": old_position,
         "new_position": new_position,
         "old_department": old_department,
@@ -316,7 +312,7 @@ def update_employee_photo(employee_id):
     except Exception:
         pass
 
-    audit("update_employee_photo", "Employee", employee_id)
+    audit_log("update_employee_photo", "Employee", employee_id)
     flash(_("✅ Profile photo updated successfully!"), "success")
     return redirect(url_for("employee_detail", employee_id=employee_id))
 
@@ -359,7 +355,7 @@ def add_skill_to_employee(employee_id):
     db.session.add(new_entry)
     db.session.commit()
 
-    audit("assign_skill", "EmployeeSkill", new_entry.id, {
+    audit_log("assign_skill", "EmployeeSkill", new_entry.id, {
         "employee_id": employee_id,
         "skill_id": skill_id,
         "level": level,
@@ -381,7 +377,7 @@ def delete_employee(employee_id):
     db.session.delete(employee)
     db.session.commit()
 
-    audit("delete_employee", "Employee", employee_id, {
+    audit_log("delete_employee", "Employee", employee_id, {
         "name": f"{employee.first_name} {employee.last_name}",
         "position": employee.position,
         "department": employee.department,
@@ -413,7 +409,7 @@ def add_skill():
         )
         db.session.add(s)
         db.session.commit()
-        audit("add_skill", "Skill", s.id, {"name": s.skill_name, "category": s.category})
+        audit_log("add_skill", "Skill", s.id, {"name": s.skill_name, "category": s.category})
         flash(_("✨ Skill added successfully!"), "success")
         return redirect(url_for("skills_list"))
     return render_template("add_skill.html")
@@ -431,7 +427,7 @@ def delete_skill(skill_id):
     db.session.delete(skill)
     db.session.commit()
 
-    audit("delete_skill", "Skill", skill_id, {
+    audit_log("delete_skill", "Skill", skill_id, {
         "name": skill.skill_name,
         "category": skill.category
     })
@@ -554,7 +550,7 @@ def set_user_role(user_id):
     old = target.role
     target.role = new_role
     db.session.commit()
-    audit("promote_user" if new_role == "admin" else "demote_user", "User", user_id, {"old": old, "new": new_role})
+    audit_log("promote_user" if new_role == "admin" else "demote_user", "User", user_id, {"old": old, "new": new_role})
     flash(_("Role updated: %(old)s → %(new)s", old=old, new=new_role), "success")
     return redirect(url_for("admin_users"))
 
