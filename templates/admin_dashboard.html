@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Admin Dashboard") }}{% endblock %}
+
+{% block content %}
+<style>
+  /* === DASHBOARD HEADER === */
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.35);
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dashboard-header::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    bottom: -40px;
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+  }
+
+  .dashboard-header h2 {
+    font-weight: 700;
+    font-size: 2.2rem;
+  }
+
+  .dashboard-header p {
+    opacity: 0.9;
+    font-weight: 300;
+  }
+
+  /* === TABLE CARDS === */
+  .card-modern {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+    border: none;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .card-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+  }
+
+  .card-modern .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+    border: none;
+    font-size: 1.05rem;
+  }
+
+  .table-modern {
+    margin: 0;
+  }
+
+  .table-modern thead {
+    background: #f6f7ff;
+  }
+
+  .table-modern th {
+    color: #4c51bf;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    padding: 1rem;
+  }
+
+  .table-modern td {
+    border: none;
+    padding: 1rem;
+    vertical-align: middle;
+    color: #2d3748;
+  }
+
+  .table-modern tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .badge-role {
+    border-radius: 12px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .badge-role.admin {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+  }
+
+  .badge-role.user {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+  }
+
+  .table-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #a0aec0;
+    font-style: italic;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fadeIn {
+    animation: fadeIn 0.6s ease forwards;
+  }
+</style>
+
+<!-- === DASHBOARD HEADER === -->
+<div class="dashboard-header fadeIn">
+  <h2><i class="bi bi-speedometer2 me-2"></i>{{ _("Admin Dashboard") }}</h2>
+  <p>{{ _("Manage users, roles, and track recent activities within the system.") }}</p>
+</div>
+
+<!-- === MAIN DASHBOARD TABLES === -->
+<div class="row g-4">
+  <!-- USERS OVERVIEW -->
+  <div class="col-lg-6">
+    <div class="card-modern fadeIn">
+      <div class="card-header">
+        <i class="bi bi-person-lines-fill me-2"></i>{{ _("User Overview") }}
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-modern align-middle mb-0">
+            <thead>
+              <tr>
+                <th>{{ _("Email") }}</th>
+                <th>{{ _("Username") }}</th>
+                <th>{{ _("Role") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td>{{ u.email }}</td>
+                <td>{{ u.username or '-' }}</td>
+                <td>
+                  <span class="badge-role {{ 'admin' if u.role == 'admin' else 'user' }}">{{ u.role|capitalize }}</span>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="table-empty">{{ _("No users found.") }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITY -->
+  <div class="col-lg-6">
+    <div class="card-modern fadeIn">
+      <div class="card-header">
+        <i class="bi bi-clock-history me-2"></i>{{ _("Recent Activity") }}
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-modern align-middle mb-0">
+            <thead>
+              <tr>
+                <th>{{ _("User") }}</th>
+                <th>{{ _("Action") }}</th>
+                <th>{{ _("Entity") }}</th>
+                <th>{{ _("Date") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in logs %}
+              <tr>
+                <td>
+                  {% if log.user %}
+                    {{ log.user.username or log.user.email }}
+                  {% else %}
+                    <span class="text-muted">System</span>
+                  {% endif %}
+                </td>
+                <td>{{ log.action }}</td>
+                <td>{{ log.entity_type or '-' }} {% if log.entity_id %}({{ log.entity_id }}){% endif %}</td>
+                <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="table-empty">{{ _("No activity recorded yet.") }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Details of") }} {{ employee.first_name }}{% endblock %}
+
+{% block content %}
+<style>
+  /* ================= PROFILE HEADER ================= */
+  .profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    flex-wrap: wrap;
+  }
+
+  .profile-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .profile-avatar {
+    position: relative;
+  }
+
+  .profile-avatar img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-avatar-fallback {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 700;
+    font-size: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 🔹 Nouveau bouton “+” pour modifier la photo */
+  .photo-plus-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #ffd93d;
+    color: #333;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .photo-plus-btn:hover {
+    background: #ffcd00;
+    transform: scale(1.1);
+  }
+
+  .photo-plus-btn i {
+    font-size: 1rem;
+  }
+
+  .photo-form {
+    margin: 0;
+  }
+
+  .profile-info h3 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    margin-top: 0.5rem;
+  }
+
+  .profile-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .profile-meta i {
+    color: #ffd93d;
+  }
+
+  .profile-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .profile-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    border-radius: 30px;
+    padding: 0.5rem 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+  }
+
+  /* ================= QR CODE + BADGE ================= */
+  .qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .qr-box {
+    background: white;
+    border-radius: 16px;
+    padding: 0.8rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+
+  .qr-box:hover {
+    transform: scale(1.05);
+  }
+
+  .qr-box img {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+  }
+
+  .qr-caption {
+    font-size: 0.9rem;
+    color: #444;
+    margin-top: 0.5rem;
+    font-weight: 500;
+  }
+
+  .btn-badge {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    padding: 0.6rem 1.4rem;
+    border-radius: 30px;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .btn-badge:hover {
+    background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(44, 82, 130, 0.4);
+    color: white;
+  }
+
+  /* ================= TABLE ================= */
+  .skills-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .skills-table thead {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  }
+
+  .skills-table th,
+  .skills-table td {
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .skills-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .level-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-block;
+  }
+
+  .level-E {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .level-A {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .level-B {
+    background: #d1ecf1;
+    color: #0c5460;
+  }
+
+  .level-C {
+    background: #cce5ff;
+    color: #004085;
+  }
+
+  .level-D {
+    background: #e2d5ff;
+    color: #3b0764;
+  }
+
+  /* ================= BUTTONS ================= */
+  .btn-add-skill {
+    background: linear-gradient(135deg, #48bb78 0%, #38b2ac 100%);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-add-skill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+  }
+
+  .btn-back {
+    background: white;
+    color: #667eea;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    border: 2px solid #667eea;
+    transition: all 0.3s ease;
+  }
+
+  .btn-back:hover {
+    background: #667eea;
+    color: white;
+  }
+</style>
+
+<div class="container mt-4">
+
+  <!-- 🔹 PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="profile-content">
+
+      <!-- ✅ AVATAR avec bouton + -->
+      <div class="profile-avatar position-relative">
+        {% if employee.photo_path %}
+        <img src="{{employee.photo_path}}" alt="Photo" id="photo-preview">
+        {% else %}
+        <div class="profile-avatar-fallback">
+          {{ employee.first_name[0] }}{{ employee.last_name[0] }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('update_employee_photo', employee_id=employee.id) }}" method="POST"
+          enctype="multipart/form-data" class="photo-form">
+          <label for="photo" class="photo-plus-btn" title="{{ _('Change photo') }}">
+            <i class="bi bi-plus-lg"></i>
+          </label>
+          <input type="file" id="photo" name="photo" accept="image/*" style="display:none;"
+            onchange="this.form.submit();">
+        </form>
+      </div>
+
+      <div class="profile-info">
+        <h3>{{ employee.first_name }} {{ employee.last_name }}</h3>
+
+        <div class="profile-meta">
+          <span><i class="bi bi-person-badge"></i> <strong>ID:</strong> {{ employee.id }}</span>
+          {% if employee.hire_date %}
+          <span><i class="bi bi-calendar-check"></i> <strong>{{ _("Hire Date") }}:</strong> {{
+            employee.hire_date.strftime('%d/%m/%Y') }}</span>
+          {% endif %}
+        </div>
+
+        <div class="profile-badges">
+          {% if employee.position %}
+          <span class="profile-badge"><i class="bi bi-briefcase-fill"></i> {{ employee.position }}</span>
+          {% endif %}
+          {% if employee.department %}
+          <span class="profile-badge"><i class="bi bi-building"></i> {{ employee.department }}</span>
+          {% endif %}
+        </div>
+        <!-- 🔒 Affichage réservé aux admins -->
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+          <!-- Les badges -->
+          <span class="btn btn-sm fw-semibold text-white shadow-sm ms-2">
+            
+          </span>
+          
+
+          <!-- Le bouton Update (placé à côté) -->
+          <button class="btn btn-sm fw-semibold text-white shadow-sm ms-2" type="button" data-bs-toggle="collapse"
+            data-bs-target="#editEmployeeBox" aria-expanded="false" aria-controls="editEmployeeBox" style="
+            background: linear-gradient(90deg, #5f7bff, #7a5fff);
+            border: none;
+            border-radius: 0.6rem;
+            transition: all 0.2s ease-in-out;
+          " onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+            <i class="bi bi-pencil-square me-1"></i> Update
+          </button>
+        </div>
+
+        <!-- bloc qui se déplie -->
+        <div class="collapse mt-3" id="editEmployeeBox">
+          <div class="card border-0 shadow-sm rounded-4" style="background-color:#f9f9fb;">
+            <div class="card-body py-3">
+              <form method="POST" action="{{ url_for('update_employee_info', employee_id=employee.id) }}"
+                class="row g-2 align-items-center">
+                <div class="col-md-5">
+                  <label class="form-label small fw-semibold text-secondary mb-1">
+                    <i class="bi bi-briefcase-fill me-1"></i> Position
+                  </label>
+                  <input type="text" name="position" value="{{ employee.position or '' }}"
+                    class="form-control form-control-sm border-0 bg-light shadow-sm" style="border-radius: 0.6rem;">
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label small fw-semibold text-secondary mb-1">
+                    <i class="bi bi-building me-1"></i> Department
+                  </label>
+                  <input type="text" name="department" value="{{ employee.department or '' }}"
+                    class="form-control form-control-sm border-0 bg-light shadow-sm" style="border-radius: 0.6rem;">
+                </div>
+                <div class="col-md-2 d-grid">
+                  <button type="submit" class="btn btn-success btn-sm shadow-sm" style="border-radius: 0.6rem;">
+                    <i class="bi bi-save2 me-1"></i> Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+
+
+
+
+      </div>
+    </div>
+
+    <!-- ✅ QR + BADGE -->
+    {% if employee.qr_code_path %}
+    <div class="qr-section">
+      <div class="qr-box">
+        <img src="{{ employee.qr_code_path }}" alt="QR Code">
+        <div class="qr-caption">{{ _("Scan for details") }}</div>
+      </div>
+      <a href="{{ url_for('generate_badge', employee_id=employee.id) }}" class="btn-badge">
+        🪪 {{ _("Generate Badge") }}
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+
+  <!-- 🔹 SKILLS LIST -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+      <h4>{{ _("Associated Skills") }}</h4>
+    </div>
+
+    {% if employee.skills %}
+    <div class="table-responsive">
+      <table class="skills-table">
+        <thead>
+          <tr>
+            <th>{{ _("Skill") }}</th>
+            <th>{{ _("Line") }}</th>
+            <th>{{ _("Level") }}</th>
+            <th>{{ _("Trainer") }}</th>
+            <th>{{ _("Assessed On") }}</th>
+            <th>{{ _("Remarks") }}</th>
+            <th>{{ _("Attachment") }}</th>
+          </tr>
+        </thead>
+        {% set LEVEL_DESCR = {
+        'E': _('In training'),
+        'A': _('Knows documentation'),
+        'B': _('Simple adjustments'),
+        'C': _('Can train others'),
+        'D': _('Manage line')
+        } %}
+        <tbody>
+
+
+          {% for es in employee.skills %}
+
+          <tr>
+            <!-- Nom du skill -->
+            <td>{{ es.skill.skill_name }}</td>
+
+            <!-- Ligne (catégorie) -->
+            <td>{{ es.skill.category or "-" }}</td>
+
+            <!-- Niveau avec description -->
+
+            {% set lvl = (es.level|string|trim|upper) %}
+            <td>
+              <span class="level-badge level-{{ lvl }}">{{ lvl }}</span>
+              <small class="text-muted ms-1">{{ LEVEL_DESCR.get(lvl, '-') }}</small>
+            </td>
+
+            <!-- Formateur -->
+            <td>{{ es.trainer or "-" }}</td>
+
+            <!-- Date d’évaluation -->
+            <td>{{ es.last_assessed.strftime("%d/%m/%Y") if es.last_assessed else "-" }}</td>
+
+            <!-- Remarques -->
+            <td>{{ es.remarks or "-" }}</td>
+
+            <!-- Pièce jointe -->
+            <td>
+              {% if es.attachment %}
+              <a href="{{ es.attachment }}" target="_blank" class="btn btn-outline-secondary btn-sm"
+                style="font-size: 0.8rem; padding: 4px 10px;">
+                <i class="bi bi-paperclip"></i> {{ _('View') }}
+              </a>
+              {% else %}
+              <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+
+
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted text-center">{{ _("No skills have been assigned to this employee yet.") }}</p>
+    {% endif %}
+  </div>
+
+  <!-- 🔹 ADD SKILL FORM -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon"><i class="bi bi-plus-circle-fill"></i></div>
+      <h4>{{ _("Add a Skill") }}</h4>
+    </div>
+
+
+    <form method="POST" action="{{ url_for('add_skill_to_employee', employee_id=employee.id) }}"
+      enctype="multipart/form-data">
+
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-4">
+          <label for="skill_id" class="form-label">{{ _("Skill") }} *</label>
+          <select name="skill_id" id="skill_id" class="form-select" required>
+            <option value="">{{ _("-- Select a skill --") }}</option>
+            {% for s in skills %}
+            <option value="{{ s.id }}">
+              {{ s.skill_name }}
+              {% if s.category %}
+              — [{{ s.category }}]
+              {% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="level" class="form-label">{{ _("Level") }} *</label>
+          <select name="level" id="level" class="form-select" required>
+            <option value="">{{ _("-- Choose --") }}</option>
+            <option value="E">E - {{ _("In training") }}</option>
+            <option value="A">A - {{ _("Knows documentation") }}</option>
+            <option value="B">B - {{ _("Simple adjustments") }}</option>
+            <option value="C">C - {{ _("Can train others") }}</option>
+            <option value="D">D - {{ _("Manage line") }}</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="last_assessed" class="form-label">
+            <i class="bi bi-calendar-date"></i>
+            {{ _("Assessment Date") }}
+          </label>
+          <input type="date" id="last_assessed" name="last_assessed" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+          <label for="trainer" class="form-label">{{ _("Trainer") }}</label>
+          <input type="text" id="trainer" name="trainer" class="form-control" placeholder="Enter trainer name">
+        </div>
+
+        <div class="col-md-3">
+          <label for="remarks" class="form-label">{{ _("Remarks") }}</label>
+          <input type="text" id="remarks" name="remarks" class="form-control" placeholder="Add remarks">
+        </div>
+
+        <!-- ✅ Nouveau champ pour le justificatif -->
+        <div class="col-md-4">
+          <label for="attachment" class="form-label">
+            <i class="bi bi-paperclip"></i> {{ _("Training Attachment") }}
+          </label>
+          <input type="file" id="attachment" name="attachment" class="form-control"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+          <small class="text-muted">{{ _("Attach proof of training (optional)") }}</small>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-add-skill">{{ _("Add") }}</button>
+    </form>
+  </div>
+
+  <!-- 🔹 BACK BUTTON -->
+  <div class="mb-4">
+    <a href="{{ url_for('index') }}" class="btn-back">
+      <i class="bi bi-arrow-left"></i> {{ _("Back to List") }}
+    </a>
+  </div>
+</div>
+{% endblock %}

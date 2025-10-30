@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="{{ get_locale() }}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ _("Skill Matrix") }}{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-32.png') }}">
+  <meta name="theme-color" content="#667eea">
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --sidebar-bg: #ffffff;
+      --sidebar-hover: #f4f5fb;
+      --text-dark: #2d3748;
+      --text-secondary: #6b7280;
+      --border-color: #e2e8f0;
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e3e8f4 100%);
+      color: var(--text-dark);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* === SIDEBAR === */
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      box-shadow: var(--shadow-md);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      padding: 1.8rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-decoration: none;
+      color: var(--text-dark);
+    }
+
+    .sidebar-brand i {
+      font-size: 1.6rem;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      color: var(--text-dark);
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link i {
+      color: #667eea;
+    }
+
+    .nav-link:hover {
+      background: var(--sidebar-hover);
+      color: #5a67d8;
+      transform: translateX(5px);
+    }
+
+    .nav-link.active {
+      background: var(--primary-gradient);
+      color: white;
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    /* === SIDEBAR FOOTER === */
+    .sidebar-footer {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #f8f9fc;
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    .btn-logout {
+      width: 100%;
+      background: linear-gradient(90deg, #f56565, #fc8181);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+
+    /* === MAIN === */
+    .main-content {
+      flex: 1;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.active ~ .main-content {
+      margin-left: 280px;
+    }
+
+    /* === TOPBAR === */
+    .topbar {
+      background: white;
+      padding: 1rem 2rem;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-mobile-menu {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-mobile-menu:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+
+    .app-name {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: #4c51bf;
+    }
+
+    .app-name i {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 🌍 Modern Language Selector */
+    .language-switch-top {
+      background: #ffffff;
+      border-radius: 50px;
+      box-shadow: var(--shadow-md);
+      padding: 0.4rem 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .language-switch-top:hover {
+      box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .language-switch-top i {
+      color: #667eea;
+      font-size: 1.2rem;
+    }
+
+    .language-switch-top a {
+      text-decoration: none;
+      font-weight: 600;
+      color: #4c51bf;
+      padding: 0.3rem 0.8rem;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+
+    .language-switch-top a:hover {
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .language-switch-top .active {
+      background: var(--primary-gradient);
+      color: white;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+
+    .content-wrapper {
+      padding: 2rem;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    footer {
+      background: white;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    footer strong {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 900;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- === SIDEBAR === -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="{{ url_for('index') }}" class="sidebar-brand">
+          <i class="bi bi-diagram-3-fill"></i> {{ _("Skill Matrix") }}
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+          <i class="bi bi-house-door-fill"></i> {{ _("Home") }}
+        </a>
+        <a href="{{ url_for('add_employee') }}" class="nav-link {% if request.endpoint == 'add_employee' %}active{% endif %}">
+          <i class="bi bi-person-plus-fill"></i> {{ _("Add Employee") }}
+        </a>
+        <a href="{{ url_for('skills_list') }}" class="nav-link {% if request.endpoint == 'skills_list' %}active{% endif %}">
+          <i class="bi bi-star-fill"></i> {{ _("Skills") }}
+        </a>
+
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+          <i class="bi bi-speedometer2"></i> {{ _("Admin Dashboard") }}
+        </a>
+        {% endif %}
+      </nav>
+
+      <div class="sidebar-footer">
+        {% if current_user.is_authenticated %}
+        <div class="user-info">
+          <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+          <div>
+            <div class="user-name">{{ current_user.username }}</div>
+            <div class="user-role">{{ current_user.role|capitalize }}</div>
+          </div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="bi bi-box-arrow-right"></i> {{ _("Logout") }}
+        </a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="btn-logout">
+          <i class="bi bi-box-arrow-in-right"></i> {{ _("Login") }}
+        </a>
+        {% endif %}
+      </div>
+    </aside>
+
+    <!-- === MAIN CONTENT === -->
+    <div class="main-content">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="btn-mobile-menu" id="btnMobileMenu">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="app-name">
+            <i class="bi bi-diagram-3-fill"></i> {{ _("Skill Matrix") }}
+          </div>
+        </div>
+
+        <!-- 🌍 Language Selector -->
+        <div class="language-switch-top">
+          <i class="bi bi-globe"></i>
+          <a href="{{ request.path }}?lang=en" class="{% if get_locale() == 'en' %}active{% endif %}">English</a>
+          <span style="color: var(--border-color);">|</span>
+          <a href="{{ request.path }}?lang=es_MX" class="{% if get_locale() == 'es_MX' %}active{% endif %}">Español 🇲🇽</a>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        {% block content %}{% endblock %}
+      </div>
+
+      <footer>
+        <strong>{{ _("Skill Matrix System") }}</strong> — {{ _("All rights reserved.") }} © 2025
+      </footer>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const btnMobileMenu = document.getElementById("btnMobileMenu");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+    btnMobileMenu.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+      sidebarOverlay.classList.toggle("active");
+    });
+
+    sidebarOverlay.addEventListener("click", () => {
+      sidebar.classList.remove("active");
+      sidebarOverlay.classList.remove("active");
+    });
+  </script>
+</body>
+</html>
