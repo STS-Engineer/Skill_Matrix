@@ -150,15 +150,6 @@ def inject_get_locale():
 
 
 
-# === AUTH ROUTES ===
-@login_required
-@login_required
-@login_required
-@login_required
-@login_required
-@login_required
-@login_required
-
 
 # === AUTH ROUTES ===
 
@@ -247,7 +238,13 @@ def add_employee():
             )
             db.session.add(emp)
             db.session.commit()
-
+            audit("add_employee", "Employee", employee.id, {
+                "name": f"{first_name} {last_name}",
+                "position": position,
+                "department": department
+            })
+            flash(_("Employee added successfully!"), "success")
+            return redirect(url_for('index'))
             # 📸 Photo upload vers GitHub
             photo = request.files.get("photo")
             if photo and photo.filename != "":
