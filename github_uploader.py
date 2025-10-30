@@ -4,8 +4,8 @@ import requests
 
 def upload_to_github(file_path, github_path):
     token = os.getenv("GITHUB_TOKEN")
-    repo ="STS-Engineer/uploads"
-    branch = os.getenv("main")
+    repo = "STS-Engineer/uploads"
+    branch = os.getenv("GITHUB_BRANCH", "main")
 
     if not token or not repo:
         raise RuntimeError("⚠️ Variables d’environnement GitHub manquantes")
