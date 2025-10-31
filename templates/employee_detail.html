@@ -310,15 +310,19 @@
           {% if employee.department %}
           <span class="profile-badge"><i class="bi bi-building"></i> {{ employee.department }}</span>
           {% endif %}
+          {% if employee.plant %}
+          <span class="profile-badge"><i class="bi bi-geo-alt-fill"></i> {{ employee.plant }}</span>
+          {% endif %}
+
         </div>
         <!-- 🔒 Affichage réservé aux admins -->
         {% if current_user.is_authenticated and current_user.role == 'admin' %}
         <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
           <!-- Les badges -->
           <span class="btn btn-sm fw-semibold text-white shadow-sm ms-2">
-            
+
           </span>
-          
+
 
           <!-- Le bouton Update (placé à côté) -->
           <button class="btn btn-sm fw-semibold text-white shadow-sm ms-2" type="button" data-bs-toggle="collapse"
@@ -351,6 +355,19 @@
                   </label>
                   <input type="text" name="department" value="{{ employee.department or '' }}"
                     class="form-control form-control-sm border-0 bg-light shadow-sm" style="border-radius: 0.6rem;">
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label small fw-semibold text-secondary mb-1">
+                    <i class="bi bi-geo-alt-fill me-1"></i> Plant
+                  </label>
+                  <select name="plant" class="form-select form-select-sm border-0 bg-light shadow-sm"
+                    style="border-radius: 0.6rem;">
+                    <option value="Assymex" {% if employee.plant=="Assymex" %}selected{% endif %}>Assymex</option>
+                    <option value="Electric Galeana" {% if employee.plant=="Electric Galeana" %}selected{% endif %}>
+                      Electric Galeana</option>
+                    <option value="Electric Rayones" {% if employee.plant=="Electric Rayones" %}selected{% endif %}>
+                      Electric Rayones</option>
+                  </select>
                 </div>
                 <div class="col-md-2 d-grid">
                   <button type="submit" class="btn btn-success btn-sm shadow-sm" style="border-radius: 0.6rem;">
