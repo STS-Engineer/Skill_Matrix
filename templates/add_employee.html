@@ -86,14 +86,22 @@
   }
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @media (max-width: 768px) {
     .add-employee-header {
       padding: 1.5rem;
     }
+
     .add-employee-form {
       padding: 1.5rem;
     }
@@ -135,7 +143,15 @@
     <div class="mb-3">
       <input name="department" placeholder="{{ _('Department') }}" class="form-control">
     </div>
-
+    <div class="form-group mb-3">
+      <label for="plant" class="form-label">{{ _("Plant") }}</label>
+      <select id="plant" name="plant" class="form-control" required>
+        <option value="">{{ _("-- Select Plant --") }}</option>
+        <option value="Assymex">Assymex</option>
+        <option value="Electric Galeana">Electric Galeana</option>
+        <option value="Electric Rayones">Electric Rayones</option>
+      </select>
+    </div>
     <!-- Hire Date -->
     <div class="mb-3">
       <label for="hire_date" class="form-label">{{ _("Hire Date") }}</label>
