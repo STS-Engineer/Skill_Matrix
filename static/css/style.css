@@ -245,3 +245,42 @@ form .form-control[type="file"] {
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
+/* --- Badge Plant (site/usine) --- */
+.profile-badge i.bi-geo-alt-fill {
+  color: #38b2ac; /* vert-bleu doux, différent des autres icônes */
+}
+
+.profile-badge.plant-badge {
+  background: rgba(56, 178, 172, 0.25); /* léger fond turquoise */
+  color: #004d40; /* texte foncé pour contraste */
+  font-weight: 600;
+  border: 1px solid rgba(56, 178, 172, 0.4);
+}
+/* Local scroll area for Recent Activity */
+.recent-activity-wrapper {
+  height: 360px;           /* fixed viewport for the table (adjust as you like) */
+  overflow-y: auto;        /* vertical scroll only */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;  /* smooth on iOS */
+  border-bottom-left-radius: 12px;    /* keep rounded feel */
+  border-bottom-right-radius: 12px;
+}
+
+/* Make table header sticky while body scrolls */
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f6f7ff;     /* same as your thead bg */
+}
+
+/* Optional: slim, themed scrollbar */
+.recent-activity-wrapper::-webkit-scrollbar { width: 8px; }
+.recent-activity-wrapper::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 8px;
+}
+.recent-activity-wrapper::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+
+/* Ensure the table itself doesn't force page scroll */
+.card-modern .card-body { padding: 0; }  /* we’ll control padding with inner content */
