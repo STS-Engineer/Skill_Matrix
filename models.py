@@ -17,7 +17,8 @@ class Employee(db.Model):
     status = db.Column(db.String(50), default="Active")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-   
+    plant = db.Column(db.String(100), nullable=False)
+
 
     skills = db.relationship("EmployeeSkill", back_populates="employee", cascade="all, delete-orphan")
 
@@ -32,7 +33,7 @@ class Skill(db.Model):
 class AuditLog(db.Model):
     __tablename__ = "audit_logs"
     id = db.Column(db.BigInteger, primary_key=True)
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     action = db.Column(db.String(50), nullable=False)
     entity_type = db.Column(db.String(50))
