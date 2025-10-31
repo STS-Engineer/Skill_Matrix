@@ -142,18 +142,25 @@ def home():
 @app.route("/index")
 @login_required
 def index():
+    employee_id = request.args.get("id", "").strip()
     search = request.args.get("search", "").strip()
     position = request.args.get("position", "").strip()
     department = request.args.get("department", "").strip()
 
     query = Employee.query
+
+    if employee_id:
+        query = query.filter(Employee.id == employee_id)
+
     if search:
         query = query.filter(
             (Employee.first_name.ilike(f"%{search}%")) |
             (Employee.last_name.ilike(f"%{search}%"))
         )
+
     if position:
         query = query.filter(Employee.position == position)
+
     if department:
         query = query.filter(Employee.department == department)
 
@@ -162,6 +169,7 @@ def index():
     departments = [d[0] for d in db.session.query(Employee.department).distinct().all() if d[0]]
 
     return render_template("index.html", employees=employees, positions=positions, departments=departments)
+
 
 # ========= Employees =========
 from github_uploader import upload_to_github  # gardé si tu l'utilises pour photo/QR
@@ -177,6 +185,7 @@ def add_employee():
             position = request.form.get("position")
             department = request.form.get("department")
             hire_date_str = request.form.get("hire_date")
+            plant = request.form['plant']
             hire_date = datetime.strptime(hire_date_str, "%Y-%m-%d").date() if hire_date_str else None
 
             emp = Employee(
@@ -185,6 +194,7 @@ def add_employee():
                 last_name=last_name,
                 position=position,
                 department=department,
+                plant=plant,
                 hire_date=hire_date
             )
             db.session.add(emp)
@@ -257,37 +267,47 @@ def employee_detail(employee_id):
 @app.route("/employee/<int:employee_id>/update_info", methods=["POST"])
 @login_required
 def update_employee_info(employee_id):
-    # admin only
+    # Admin only
     if current_user.role != "admin":
         abort(403)
 
     employee = Employee.query.get_or_404(employee_id)
 
+    # Get form data
     new_position = request.form.get("position")
     new_department = request.form.get("department")
+    new_plant = request.form.get("plant")
 
-    if not new_position or not new_department:
+    # Validation
+    if not new_position or not new_department or not new_plant:
         flash(_("⚠️ Please fill in all fields."), "warning")
         return redirect(url_for("employee_detail", employee_id=employee_id))
 
+    # Store old values for audit
     old_position = employee.position
     old_department = employee.department
+    old_plant = employee.plant
 
+    # Update values
     employee.position = new_position
     employee.department = new_department
+    employee.plant = new_plant
 
     db.session.commit()
 
-    # Audit
+    # Audit log
     audit_log("update_employee_info", "Employee", employee_id, {
         "old_position": old_position,
         "new_position": new_position,
         "old_department": old_department,
-        "new_department": new_department
+        "new_department": new_department,
+        "old_plant": old_plant,
+        "new_plant": new_plant
     })
 
     flash(_("✅ Employee information updated successfully!"), "success")
     return redirect(url_for("employee_detail", employee_id=employee_id))
+
 
 @app.route("/employee/<int:employee_id>/update_photo", methods=["POST"])
 @login_required
