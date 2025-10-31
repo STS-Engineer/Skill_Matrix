@@ -33,6 +33,7 @@
       opacity: 0;
       transform: translateY(-15px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -102,19 +103,22 @@
     color: #4a5568;
   }
 
-  .form-control, .form-select {
+  .form-control,
+  .form-select {
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
     box-shadow: none;
   }
 
-  .form-control:focus, .form-select:focus {
+  .form-control:focus,
+  .form-select:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
   }
 
-  .btn-filter, .btn-reset {
+  .btn-filter,
+  .btn-reset {
     border-radius: 12px;
     font-weight: 600;
     transition: all 0.3s ease;
@@ -156,6 +160,7 @@
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -306,6 +311,57 @@
     <i class="bi bi-person-plus-fill"></i> {{ _("Add New Employee") }}
   </a>
 </div>
+<!-- === FILTER BAR === -->
+<div class="filter-bar">
+  <div class="filter-header">
+    <i class="bi bi-funnel-fill"></i>
+    <h6>{{ _("Filter Employees") }}</h6>
+  </div>
+  <form method="GET" action="{{ url_for('index') }}" class="row g-3 align-items-end">
+    <div class="col-md-2">
+      <label for="id" class="form-label">{{ _("Employee ID") }}</label>
+      <input type="number" id="id" name="id" class="form-control"
+             value="{{ request.args.get('id', '') }}"
+             placeholder="{{ _('Search by ID') }}">
+    </div>
+
+    <div class="col-md-3">
+      <label for="search" class="form-label">{{ _("Name") }}</label>
+      <input type="text" id="search" name="search" class="form-control"
+             value="{{ request.args.get('search', '') }}"
+             placeholder="{{ _('Search by name') }}">
+    </div>
+
+    <div class="col-md-3">
+      <label for="position" class="form-label">{{ _("Position") }}</label>
+      <select id="position" name="position" class="form-select">
+        <option value="">{{ _("All Positions") }}</option>
+        {% for pos in positions %}
+          <option value="{{ pos }}" {% if request.args.get('position') == pos %}selected{% endif %}>{{ pos }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="department" class="form-label">{{ _("Department") }}</label>
+      <select id="department" name="department" class="form-select">
+        <option value="">{{ _("All Departments") }}</option>
+        {% for dep in departments %}
+          <option value="{{ dep }}" {% if request.args.get('department') == dep %}selected{% endif %}>{{ dep }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-1 d-flex gap-2">
+      <button type="submit" class="btn btn-filter w-100">
+        <i class="bi bi-search"></i>
+      </button>
+      <a href="{{ url_for('index') }}" class="btn btn-reset w-100">
+        <i class="bi bi-arrow-repeat"></i>
+      </a>
+    </div>
+  </form>
+</div>
 
 {% if employees %}
 <div class="employee-card mt-4">
@@ -318,6 +374,7 @@
             <th class="text-start ps-4">{{ _("Full Name") }}</th>
             <th>{{ _("Position") }}</th>
             <th>{{ _("Department/Line") }}</th>
+            <th>{{ _("Plant") }}</th>
             <th>{{ _("QR Code") }}</th>
             <th>{{ _("Actions") }}</th>
           </tr>
@@ -344,6 +401,13 @@
             <td>
               {% if e.department %}
               <span class="badge-department">{{ e.department }}</span>
+              {% else %}
+              <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.plant %}
+              <span class="badge bg-info text-dark">{{ e.plant }}</span>
               {% else %}
               <span class="text-muted">-</span>
               {% endif %}
