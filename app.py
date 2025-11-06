@@ -307,6 +307,34 @@ def update_employee_info(employee_id):
 
     flash(_("✅ Employee information updated successfully!"), "success")
     return redirect(url_for("employee_detail", employee_id=employee_id))
+@app.route('/employee/<int:employee_id>/skill/<int:skill_id>/delete', methods=['POST'])
+@login_required
+def delete_employee_skill(employee_id, skill_id):
+    if current_user.role != "admin":
+        abort(403)
+
+    employee_skill = EmployeeSkill.query.get_or_404(skill_id)
+    db.session.delete(employee_skill)
+    db.session.commit()
+
+    flash(_("🗑️ Skill deleted successfully!"), "success")
+    return redirect(url_for("employee_detail", employee_id=employee_id))
+
+@app.route('/employee/<int:employee_id>/skill/<int:skill_id>/update', methods=['POST'])
+@login_required
+def update_employee_skill(employee_id, skill_id):
+    if current_user.role != "admin":
+        abort(403)
+
+    es = EmployeeSkill.query.get_or_404(skill_id)
+    es.level = request.form.get('level')
+    es.trainer = request.form.get('trainer')
+    es.remarks = request.form.get('remarks')
+
+    db.session.commit()
+    flash(_("✅ Skill updated successfully!"), "success")
+    return redirect(url_for('employee_detail', employee_id=employee_id))
+
 
 
 @app.route("/employee/<int:employee_id>/update_photo", methods=["POST"])
