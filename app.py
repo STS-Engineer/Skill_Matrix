@@ -510,11 +510,21 @@ def generate_badge(employee_id):
     c.setLineWidth(0.4)
     c.line(0.5 * cm, height - 2.3 * cm, width - 0.5 * cm, height - 2.3 * cm)
 
+    # Logos
     assymex_logo = os.path.join(app.root_path, "static", "img", "logo_assymex.jpg")
+    electric_logo = os.path.join(app.root_path, "static", "img", "electric_assymex.jpg")
     avocarbon_logo = os.path.join(app.root_path, "static", "img", "avocarbon_logo.png")
 
-    if os.path.exists(assymex_logo):
-        c.drawImage(assymex_logo, 0.7 * cm, height - 4.0 * cm,
+    # Choix dynamique selon le plant
+    plant_name = (employee.plant or "").strip().lower()
+    if "assymex" in plant_name:
+        main_logo = assymex_logo
+    else:
+        main_logo = electric_logo
+
+    # Dessin du logo
+    if os.path.exists(main_logo):
+        c.drawImage(main_logo, 0.7 * cm, height - 4.0 * cm,
                     width=2.2 * cm, height=0.9 * cm,
                     preserveAspectRatio=True, mask='auto')
 
