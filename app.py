@@ -484,6 +484,7 @@ def delete_skill(skill_id):
     return redirect(url_for("skills_list"))
 
 # ========= Badge / Public =========
+# ========= Badge / Public =========
 @app.route("/badge/<int:employee_id>")
 def generate_badge(employee_id):
     employee = Employee.query.get_or_404(employee_id)
@@ -496,38 +497,73 @@ def generate_badge(employee_id):
     width, height = (5.9 * cm, 8.4 * cm)
     c = canvas.Canvas(badge_path, pagesize=(width, height))
 
+    # === Contour ===
     c.setStrokeColorRGB(0, 0, 0)
     c.rect(0.1 * cm, 0.1 * cm, width - 0.2 * cm, height - 0.2 * cm)
 
-    c.setFont("Helvetica-Bold", 7)
-    c.drawCentredString(width / 2, height - 0.8 * cm, "ASSYMEX MONTERREY, S.A. DE C.V.")
-    c.setFont("Helvetica", 6)
-    c.drawCentredString(width / 2, height - 1.2 * cm, "San Sebastián No.110 Col. Los Lermas")
-    c.drawCentredString(width / 2, height - 1.6 * cm, "67190 Guadalupe, N.L. México")
-    c.drawCentredString(width / 2, height - 2.0 * cm, "Tels. +52 81 8127 2833 y +52 81 8127 2835")
-
-    c.setStrokeColorRGB(0.75, 0.75, 0.75)
-    c.setLineWidth(0.4)
-    c.line(0.5 * cm, height - 2.3 * cm, width - 0.5 * cm, height - 2.3 * cm)
-
-    # Logos
+    # === Logos ===
     assymex_logo = os.path.join(app.root_path, "static", "img", "logo_assymex.jpg")
     electric_logo = os.path.join(app.root_path, "static", "img", "electric_assymex.jpg")
     avocarbon_logo = os.path.join(app.root_path, "static", "img", "avocarbon_logo.png")
 
-    # Choix dynamique selon le plant
     plant_name = (employee.plant or "").strip().lower()
+
+    # === Adresse & Logo selon le plant ===
     if "assymex" in plant_name:
+        header_lines = [
+            "ASSYMEX MONTERREY, S.A. DE C.V.",
+            "San Sebastián No.110 Col. Los Lermas",
+            "67190 Guadalupe, N.L. México",
+            "Tels. +52 81 8127 2833 y +52 81 8127 2835"
+        ]
         main_logo = assymex_logo
-    else:
+
+    elif "rayones" in plant_name:
+        header_lines = [
+            "Electric Assymex del Sur, S.A. de C.V.",
+            "Entrada a Rayones, KM 49",
+            "Junto a bodega las Parcelas C.P. 67650",
+            "Rayones, N.L., México",
+            "Tél. : 81 8127 28 33 / 81 8127 28 35"
+        ]
         main_logo = electric_logo
 
-    # Dessin du logo
+    elif "galeana" in plant_name:
+        header_lines = [
+            "Electric Assymex del Sur, S.A. de C.V.",
+            "Galeana, N.L., MÉXICO",
+            "Tél. : 81 8127 28 33 / 81 8127 28 35"
+        ]
+        main_logo = electric_logo
+
+    else:
+        # Par défaut si le plant est vide ou inconnu
+        header_lines = [
+            "Electric Assymex del Sur, S.A. de C.V.",
+            "Galeana, N.L., MÉXICO",
+            "Tél. : 81 8127 28 33 / 81 8127 28 35"
+        ]
+        main_logo = electric_logo
+
+    # === Texte d’en-tête ===
+    c.setFont("Helvetica-Bold", 7)
+    y = height - 0.8 * cm
+    for line in header_lines:
+        c.drawCentredString(width / 2, y, line)
+        y -= 0.4 * cm
+
+    # Ligne de séparation
+    c.setStrokeColorRGB(0.75, 0.75, 0.75)
+    c.setLineWidth(0.4)
+    c.line(0.5 * cm, y - 0.2 * cm, width - 0.5 * cm, y - 0.2 * cm)
+
+    # === Logo principal (plant) ===
     if os.path.exists(main_logo):
         c.drawImage(main_logo, 0.7 * cm, height - 4.0 * cm,
                     width=2.2 * cm, height=0.9 * cm,
                     preserveAspectRatio=True, mask='auto')
 
+    # === QR Code ===
     if employee.qr_code_path:
         try:
             c.drawImage(employee.qr_code_path, 0.9 * cm, 1.9 * cm,
@@ -535,6 +571,7 @@ def generate_badge(employee_id):
         except Exception as e:
             print(f"QR draw error: {e}")
 
+    # === Photo ===
     if employee.photo_path:
         try:
             c.drawImage(employee.photo_path, 3.3 * cm, 1.9 * cm,
@@ -550,11 +587,13 @@ def generate_badge(employee_id):
         c.setFont("Helvetica-Oblique", 6)
         c.drawString(3.5 * cm, 3.8 * cm, "No Photo")
 
+    # === Logo Avocarbon ===
     if os.path.exists(avocarbon_logo):
         c.drawImage(avocarbon_logo, width - 2.2 * cm, 0.25 * cm,
                     width=1.7 * cm, height=0.7 * cm,
                     preserveAspectRatio=True, mask='auto')
 
+    # === Nom et poste ===
     c.setFillColorRGB(0.17, 0.35, 0.69)
     c.rect(0.4 * cm, 0.6 * cm, width - 0.8 * cm, 1.2 * cm, fill=True, stroke=False)
     c.setFillColorRGB(1, 1, 1)
@@ -566,6 +605,7 @@ def generate_badge(employee_id):
         c.setFont("Helvetica", 6)
         c.drawCentredString(width / 2, 0.7 * cm, employee.position.upper())
 
+    # === ID ===
     c.setStrokeColorRGB(0.3, 0.3, 0.3)
     c.setFillColorRGB(0.95, 0.95, 0.95)
     c.rect(0.4 * cm, 0.2 * cm, 2.2 * cm, 0.35 * cm, fill=True, stroke=True)
